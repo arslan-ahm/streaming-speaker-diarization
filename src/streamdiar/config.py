@@ -142,10 +142,10 @@ class DiarizerConfig:
     #: assigning. Off = decide from the single window embedding (the ablation).
     bounded_window: bool = True
     #: Cosine-similarity threshold for local micro-cluster agglomeration.
-    micro_cluster_threshold: float = 0.72
+    micro_cluster_threshold: float = 0.85
     #: Cosine similarity below which no existing speaker matches and a new one
     #: is created.
-    spawn_threshold: float = 0.55
+    spawn_threshold: float = 0.83
     #: Allow new speakers after the warm-up prefix. Off = ablation.
     spawn_enabled: bool = True
     #: Windows in the warm-up prefix during which spawning is always allowed.
@@ -161,13 +161,13 @@ class DiarizerConfig:
     #: Method selector: online | naive_online | offline_ahc | offline_spectral.
     method: str = "online"
     #: Offline agglomerative stopping threshold (cosine distance).
-    offline_ahc_threshold: float = 0.42
+    offline_ahc_threshold: float = 0.22
     #: Maximum K considered by the spectral eigengap search.
     offline_spectral_max_k: int = 10
     #: Row-wise affinity thresholding percentile for the spectral refinement of
     #: Wang et al. (2018). 0 disables it. This makes the offline baseline
     #: *stronger*, which is the point of a fair reference.
-    offline_spectral_percentile: float = 0.90
+    offline_spectral_percentile: float = 0.80
     #: k-means restarts inside spectral clustering. Deterministic given the seed.
     offline_kmeans_restarts: int = 5
     #: Frames of causal hangover and onset run for the energy VAD.

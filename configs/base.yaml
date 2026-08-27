@@ -51,11 +51,15 @@ diarizer:
   spawn_enabled: true
   max_speakers: 12
   centroid_momentum: 0.35
-  # --- tuned on dev, seed 0 ---
-  micro_cluster_threshold: 0.72
-  spawn_threshold: 0.55
-  offline_ahc_threshold: 0.42
-  offline_spectral_percentile: 0.90
+  # --- tuned on dev, seed 0, by scripts/tune_thresholds.py ---
+  # Selection rule: minimum dev DER, near-ties (within 1% relative DER) broken on
+  # the smallest |speaker-count bias|. Grids in
+  # results/tables/threshold_tuning_*.csv. Frozen across all seeds, so seeds 1+
+  # are held out with respect to hyperparameter choice.
+  micro_cluster_threshold: 0.85
+  spawn_threshold: 0.83
+  offline_ahc_threshold: 0.22
+  offline_spectral_percentile: 0.80
 
 eval:
   collar_s: 0.0        # primary DER scores every frame, including overlap
