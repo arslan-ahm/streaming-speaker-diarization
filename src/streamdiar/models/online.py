@@ -105,7 +105,9 @@ class DiarizationOutput:
         frame left unassigned.
         """
         out = np.full(self.n_frames, -1, dtype=np.int64)
-        for lab, end in zip(self.labels.tolist(), self.window_ends.tolist()):
+        for lab, end in zip(
+            self.labels.tolist(), self.window_ends.tolist(), strict=True
+        ):
             start = max(0, int(end) - self.hop_frames)
             out[start : int(end)] = int(lab)
         return out

@@ -214,7 +214,9 @@ def score_output(
     counts = ref.sum(axis=1)
     speech = counts > 0
     overlap_floor = (
-        float(np.maximum(0, counts[speech] - 1).sum() / max(counts.sum(), 1)) if speech.any() else 0.0
+        float(np.maximum(0, counts[speech] - 1).sum() / max(counts.sum(), 1))
+        if speech.any()
+        else 0.0
     )
 
     # Calibration: correctness of each turn decision, through the DER mapping.
@@ -337,7 +339,9 @@ def per_recording_metric(results: list[RecordingResult], metric: str) -> np.ndar
     return np.asarray([r.metrics.get(metric, np.nan) for r in results], dtype=np.float64)
 
 
-def pooled_calibration(results: list[RecordingResult]) -> tuple[np.ndarray, np.ndarray, np.ndarray, int]:
+def pooled_calibration(
+    results: list[RecordingResult],
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, int]:
     """Concatenate turn-decision records across recordings.
 
     Pooling across recordings is the right unit here — a calibration curve is a

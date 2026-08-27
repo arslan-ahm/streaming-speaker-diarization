@@ -150,7 +150,7 @@ def der(
     mapping: dict[int, int] = {}
     if n_ref and n_hyp and overlap.size:
         rows, cols = linear_sum_assignment(overlap.astype(np.float64), maximize=True)
-        mapping = {int(i): int(j) for i, j in zip(rows, cols)}
+        mapping = {int(i): int(j) for i, j in zip(rows, cols, strict=True)}
 
     correct = np.zeros(r.shape[0], dtype=np.int64)
     for i, j in mapping.items():
@@ -209,7 +209,9 @@ def jer(ref: np.ndarray, hyp: np.ndarray, mapping: dict[int, int]) -> float:
     return float(np.mean(errs)) if errs else float("nan")
 
 
-def labels_to_matrix(labels: np.ndarray, n_frames: int, n_speakers: int | None = None) -> np.ndarray:
+def labels_to_matrix(
+    labels: np.ndarray, n_frames: int, n_speakers: int | None = None
+) -> np.ndarray:
     """Frame labels (``-1`` = non-speech) to a ``(T, H)`` one-hot activity matrix.
 
     Hypothesis labels are densified to ``0..H-1`` in order of first appearance so

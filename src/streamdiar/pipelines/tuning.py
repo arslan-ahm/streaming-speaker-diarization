@@ -57,7 +57,9 @@ class CachedRecording:
     is_speech: np.ndarray
 
 
-def precompute(model: TrainedModel, cfg: Config, recordings: list[Recording]) -> list[CachedRecording]:
+def precompute(
+    model: TrainedModel, cfg: Config, recordings: list[Recording]
+) -> list[CachedRecording]:
     """Embed and run the VAD once per recording, so a grid search only re-clusters."""
     win, hop = cfg.frames_per_window, cfg.frames_per_hop
     cached = []
@@ -109,7 +111,7 @@ def similarity_distributions(
 def _score_cached(cfg: Config, cached: list[CachedRecording], outputs: list) -> dict[str, float]:
     """Mean DER / confusion / speaker count over a set of hypotheses."""
     ders, confs, counts, jers = [], [], [], []
-    for c, out in zip(cached, outputs):
+    for c, out in zip(cached, outputs, strict=True):
         res = score_output(c.recording, out, cfg)
         ders.append(res.metrics["der"])
         confs.append(res.metrics["confusion"])

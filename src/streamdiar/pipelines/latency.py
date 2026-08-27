@@ -104,14 +104,18 @@ def run_latency_point(
     model = load_or_train(cfg, seed, verbose=verbose)
     recordings = test_split(cfg, seed)
     results = evaluate(model, cfg, recordings, method=method, latency_budget_ms=budget_ms)
-    rows = rows_from_results(results, seed=seed, budget_windows=int(budget_ms // cfg.diarizer.hop_ms))
+    rows = rows_from_results(
+        results, seed=seed,
+        budget_windows=int(budget_ms // cfg.diarizer.hop_ms),
+    )
     for row in rows:
         row["latency_budget_ms"] = float(budget_ms)
     append_rows(out_csv, rows)
     agg = aggregate(results)
     if verbose:
         print(
-            f"  {method} budget {budget_ms:7.0f} ms (={int(budget_ms // cfg.diarizer.hop_ms)} hops) "
+            f"  {method} budget {budget_ms:7.0f} ms "
+            f"(={int(budget_ms // cfg.diarizer.hop_ms)} hops) "
             f"seed {seed}: DER {agg['der']:.4f}  conf {agg['confusion']:.4f}  "
             f"measured latency {agg['latency_median_ms']:.0f} ms  "
             f"query size {agg.get('extra_mean_query_size', float('nan')):.2f}"

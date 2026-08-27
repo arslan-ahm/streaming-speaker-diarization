@@ -43,7 +43,8 @@ def frame_energy(features: np.ndarray, mean: np.ndarray, sd: np.ndarray) -> np.n
     keeps this causal; see ``models/embedder.py`` for the same argument.
     """
     x = np.asarray(features, dtype=np.float64)
-    z = (x - np.asarray(mean, dtype=np.float64)) / np.maximum(np.asarray(sd, dtype=np.float64), 1e-6)
+    denom = np.maximum(np.asarray(sd, dtype=np.float64), 1e-6)
+    z = (x - np.asarray(mean, dtype=np.float64)) / denom
     return z.mean(axis=1)
 
 
@@ -120,7 +121,7 @@ def fit_vad_threshold(
     for t in grid:
         wrong = 0
         total = 0
-        for e, ref in zip(energies, references):
+        for e, ref in zip(energies, references, strict=True):
             pred = energy_vad(e, float(t), hangover_frames, onset_frames)
             wrong += int((pred != np.asarray(ref, dtype=bool)).sum())
             total += int(pred.size)
@@ -146,7 +147,7 @@ def windows_are_speech(
     """
     sp = np.asarray(speech, dtype=bool)
     out = np.zeros(len(region_starts), dtype=bool)
-    for k, (s, e) in enumerate(zip(region_starts, region_ends)):
+    for k, (s, e) in enumerate(zip(region_starts, region_ends, strict=True)):
         if e > s:
             out[k] = sp[int(s) : int(e)].mean() >= min_fraction
     return out

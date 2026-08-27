@@ -415,14 +415,16 @@ def sample_training_batch(
     feats: list[np.ndarray] = []
     labels: list[int] = []
     for local, pid in enumerate(chosen):
-        for m in range(n_segments):
+        for _ in range(n_segments):
             variant = int(rng.integers(0, 1_000_000))
             feats.append(sample_segment(cfg, seed, pool, int(pid), variant, segment_frames))
             labels.append(local)
     return np.stack(feats, axis=0), np.asarray(labels, dtype=np.int64)
 
 
-def feature_statistics(cfg: DataConfig, seed: int, n_segments: int = 64) -> tuple[np.ndarray, np.ndarray]:
+def feature_statistics(
+    cfg: DataConfig, seed: int, n_segments: int = 64
+) -> tuple[np.ndarray, np.ndarray]:
     """Per-channel mean and sd, estimated from *training* segments only.
 
     These are frozen into the model at construction time. This is the causal

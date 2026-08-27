@@ -149,18 +149,27 @@ def scaling_study(
         n_frames = rec.n_frames
         budget = cfg.budget_windows
 
+        # Loop variables are bound as keyword defaults rather than captured:
+        # a late-binding closure inside a loop is the classic way a timing
+        # harness ends up benchmarking the last iteration's data every time.
+        def _online(e=embeddings, s=starts, n=ends, sp=is_speech,
+                    b=budget, nf=n_frames, h=hop):
+            return diarize_online(e, s, n, sp, cfg.diarizer, b, nf, h)
+
+        def _ahc(e=embeddings, s=starts, n=ends, sp=is_speech,
+                 nf=n_frames, h=hop):
+            return diarize_offline(e, s, n, sp, cfg.diarizer, nf, h,
+                                  method="offline_ahc", seed=seed)
+
+        def _spectral(e=embeddings, s=starts, n=ends, sp=is_speech,
+                      nf=n_frames, h=hop):
+            return diarize_offline(e, s, n, sp, cfg.diarizer, nf, h,
+                                  method="offline_spectral", seed=seed)
+
         jobs = {
-            "online": lambda: diarize_online(
-                embeddings, starts, ends, is_speech, cfg.diarizer, budget, n_frames, hop
-            ),
-            "offline_ahc": lambda: diarize_offline(
-                embeddings, starts, ends, is_speech, cfg.diarizer, n_frames, hop,
-                method="offline_ahc", seed=seed,
-            ),
-            "offline_spectral": lambda: diarize_offline(
-                embeddings, starts, ends, is_speech, cfg.diarizer, n_frames, hop,
-                method="offline_spectral", seed=seed,
-            ),
+            "online": _online,
+            "offline_ahc": _ahc,
+            "offline_spectral": _spectral,
         }
         for name, fn in jobs.items():
             t = measure_latency(fn, warmup=max(2, cfg.eval.bench_warmup // 2), repeats=9)

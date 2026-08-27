@@ -4,13 +4,6 @@ from __future__ import annotations
 
 from .ablation import ABLATIONS, ablation_tests, run_ablations, summarise_ablations
 from .calibration import run_calibration, summarise_calibration
-from .comparison import (
-    VARIANTS,
-    headline_table,
-    run_comparison,
-    statistical_tests,
-    summarise,
-)
 from .common import (
     LOWER_IS_BETTER,
     METRIC_FAMILY,
@@ -18,6 +11,13 @@ from .common import (
     load_or_train,
     test_split,
     write_table,
+)
+from .comparison import (
+    VARIANTS,
+    headline_table,
+    run_comparison,
+    statistical_tests,
+    summarise,
 )
 from .efficiency import run_efficiency, scaling_study
 from .latency import (
