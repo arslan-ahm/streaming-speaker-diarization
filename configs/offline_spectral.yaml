@@ -1,0 +1,4 @@
+_base_: base.yaml
+name: offline_spectral
+diarizer:
+  method: offline_spectral

@@ -1,0 +1,4 @@
+_base_: base.yaml
+name: naive_online
+diarizer:
+  method: naive_online

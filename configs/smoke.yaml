@@ -1,0 +1,19 @@
+_base_: base.yaml
+# Tiny end-to-end configuration for the smoke test and CI. Runs in well under a
+# minute and must still produce a populated output table -- the sibling project
+# shipped a bug where the results table printed empty, so the smoke test asserts
+# non-empty rather than merely asserting exit code 0.
+name: smoke
+data:
+  duration_s: 12.0
+  n_dev_recordings: 2
+  n_test_recordings: 3
+  n_train_speakers: 24
+  n_test_speakers: 12
+train:
+  steps: 20
+  log_every: 10
+  n_speakers_per_batch: 6
+  n_segments_per_speaker: 2
+eval:
+  bootstrap_resamples: 200

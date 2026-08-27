@@ -1,0 +1,7 @@
+_base_: base.yaml
+# Ablation: keep the latency budget, remove the mechanism that uses it. The
+# decision is taken from the single window embedding instead of the local
+# micro-cluster. Isolates "the lookahead helps" from "having a buffer helps".
+name: ablation_no_bounded_window
+diarizer:
+  bounded_window: false

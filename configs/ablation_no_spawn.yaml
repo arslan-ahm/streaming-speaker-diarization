@@ -1,0 +1,6 @@
+_base_: base.yaml
+# Ablation: new speakers may only be created during the warm-up prefix. A speaker
+# who first talks late in the recording can never be represented.
+name: ablation_no_spawn
+diarizer:
+  spawn_enabled: false

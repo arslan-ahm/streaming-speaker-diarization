@@ -1,0 +1,65 @@
+# Base configuration. Every other config inherits from this via `_base_`.
+#
+# Values here either (a) restate a dataclass default because it is scientifically
+# load-bearing and should be visible without reading Python, or (b) override one.
+# The three clustering thresholds were tuned on the DEV split with seed 0 only
+# (`scripts/tune_thresholds.py`) and are frozen across every seed and every
+# experiment; see docs/METHOD.md section 6.
+name: base
+seed: 0
+out_root: results
+
+data:
+  n_features: 40
+  frame_rate: 100
+  duration_s: 60.0
+  n_speakers_range: [2, 5]
+  # Difficulty is calibrated, not arbitrary: an untrained embedder scores 0.281
+  # on the 12-way batch task at these values (chance 0.083), a trained one 0.708.
+  speaker_scale: 0.5
+  channel_sd: 1.5
+  noise_sd: 0.9
+  overlap_prob: 0.45
+  overlap_frac_max: 0.6
+  n_train_speakers: 160
+  n_test_speakers: 60
+  n_dev_recordings: 8
+  n_test_recordings: 24
+
+embedder:
+  channels: 64
+  kernel_size: 3
+  dilations: [1, 2, 4, 8]   # 31-frame (310 ms) receptive field
+  embed_dim: 32
+  dropout: 0.1
+  causal: true
+
+train:
+  steps: 900
+  n_speakers_per_batch: 12
+  n_segments_per_speaker: 4
+  segment_frames: 100
+  lr: 0.003
+  threads: 2
+
+diarizer:
+  method: online
+  window_ms: 1000.0
+  hop_ms: 250.0
+  latency_budget_ms: 500.0
+  bounded_window: true
+  spawn_enabled: true
+  max_speakers: 12
+  centroid_momentum: 0.35
+  # --- tuned on dev, seed 0 ---
+  micro_cluster_threshold: 0.72
+  spawn_threshold: 0.55
+  offline_ahc_threshold: 0.42
+  offline_spectral_percentile: 0.90
+
+eval:
+  collar_s: 0.0        # primary DER scores every frame, including overlap
+  score_overlap: true
+  bootstrap_resamples: 2000
+  bench_warmup: 8
+  bench_repeats: 25

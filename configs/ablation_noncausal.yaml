@@ -1,0 +1,8 @@
+_base_: base.yaml
+# Ablation: centred convolution padding. The embedder now sees ~150 ms of future
+# per frame, so the system is NOT a valid online system -- this variant exists to
+# quantify what causality costs, and tests/test_causality.py asserts that it
+# fails the bit-identity check that the causal model passes.
+name: ablation_noncausal
+embedder:
+  causal: false
