@@ -1,0 +1,80 @@
+name: ablation_noncausal
+seed: 0
+out_root: results
+data:
+  n_features: 40
+  frame_rate: 100
+  duration_s: 60.0
+  n_speakers_range:
+  - 2
+  - 5
+  turn_median_s: 2.4
+  turn_sigma: 0.75
+  overlap_prob: 0.45
+  overlap_frac_max: 0.6
+  pause_range_s:
+  - 0.05
+  - 0.7
+  speaker_scale: 0.5
+  noise_sd: 0.9
+  channel_sd: 1.5
+  n_phones: 24
+  n_train_speakers: 160
+  n_test_speakers: 60
+  n_train_recordings: 0
+  n_dev_recordings: 8
+  n_test_recordings: 24
+  real_root: null
+embedder:
+  channels: 64
+  kernel_size: 3
+  dilations:
+  - 1
+  - 2
+  - 4
+  - 8
+  embed_dim: 32
+  dropout: 0.1
+  causal: false
+  use_std_pooling: true
+train:
+  steps: 900
+  n_speakers_per_batch: 12
+  n_segments_per_speaker: 4
+  segment_frames: 100
+  lr: 0.003
+  weight_decay: 0.0001
+  init_logit_scale: 10.0
+  init_logit_bias: -5.0
+  grad_clip: 5.0
+  log_every: 50
+  threads: 2
+diarizer:
+  window_ms: 1000.0
+  hop_ms: 250.0
+  latency_budget_ms: 500.0
+  bounded_window: true
+  micro_cluster_threshold: 0.85
+  spawn_threshold: 0.83
+  spawn_enabled: true
+  warmup_windows: 8
+  max_speakers: 12
+  centroid_momentum: 0.35
+  oracle_n_speakers: false
+  confidence_temperature: 0.12
+  method: online
+  offline_ahc_threshold: 0.22
+  offline_spectral_max_k: 10
+  offline_spectral_percentile: 0.8
+  offline_kmeans_restarts: 5
+  vad_hangover_frames: 12
+  vad_onset_frames: 3
+  vad_threshold: 0.0
+eval:
+  collar_s: 0.0
+  score_overlap: true
+  bootstrap_resamples: 2000
+  ci_level: 0.95
+  n_calibration_bins: 15
+  bench_warmup: 8
+  bench_repeats: 25

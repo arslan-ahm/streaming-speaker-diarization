@@ -279,6 +279,17 @@ def fit_temperature(
 
 
 def apply_temperature(logits: np.ndarray, temperature: float) -> np.ndarray:
-    """Sigmoid of ``logits / temperature``, clipped into the open unit interval."""
+    """Sigmoid of ``logits / temperature``, clipped into the open unit interval.
+
+    Written in the branch-free stable form rather than ``1 / (1 + exp(-z))``,
+    which overflows for ``z`` below about -700 and emits a RuntimeWarning even
+    though the clipped result would be correct. A warning that fires on valid
+    input trains the reader to ignore warnings.
+    """
     z = np.asarray(logits, dtype=np.float64) / max(float(temperature), 1e-6)
-    return np.clip(1.0 / (1.0 + np.exp(-z)), 1e-12, 1.0 - 1e-12)
+    out = np.empty_like(z)
+    pos = z >= 0
+    out[pos] = 1.0 / (1.0 + np.exp(-z[pos]))
+    ez = np.exp(z[~pos])
+    out[~pos] = ez / (1.0 + ez)
+    return np.clip(out, 1e-12, 1.0 - 1e-12)
