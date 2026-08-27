@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "streamdiar"
+version = "1.0.0"
+description = "Online, bounded-latency, bounded-memory speaker diarization with a from-scratch compact speaker embedder"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [{ name = "Arslan Ahmad" }]
+keywords = [
+    "speaker-diarization",
+    "online-diarization",
+    "streaming",
+    "speaker-embedding",
+    "incremental-clustering",
+    "diarization-error-rate",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
+dependencies = [
+    "torch>=2.2",
+    "numpy>=1.24",
+    "scipy>=1.11",
+    "pandas>=2.0",
+    "pyyaml>=6.0",
+    "matplotlib>=3.7",
+    "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+notebooks = ["jupyter>=1.0", "nbformat>=5.9", "nbconvert>=7.10", "ipykernel>=6.29"]
+
+[project.scripts]
+streamdiar = "streamdiar.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/arslan-ahmad/streaming-speaker-diarization"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = ["slow: marks tests that take more than a few seconds"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "scripts", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["B008", "E741"]
