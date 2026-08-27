@@ -48,6 +48,9 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Tests import the package from src/ without requiring an editable install, so a
+# fresh checkout can run `pytest` immediately and CI needs no install step.
+pythonpath = ["src"]
 addopts = "-q --strict-markers"
 markers = ["slow: marks tests that take more than a few seconds"]
 filterwarnings = ["ignore::DeprecationWarning"]

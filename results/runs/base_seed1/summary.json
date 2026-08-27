@@ -1,0 +1,12 @@
+{
+  "name": "base",
+  "seed": 1,
+  "n_parameters": 52144,
+  "train_seconds": 300.14063650000026,
+  "wall_seconds": 308.23247529999935,
+  "final_loss": 1.0678714513778687,
+  "final_batch_accuracy": 0.6666666666666666,
+  "vad_threshold": -0.9260160035240688,
+  "vad_frame_error": 0.0240625,
+  "checkpoint": "checkpoints\\base_seed1.pt"
+}
