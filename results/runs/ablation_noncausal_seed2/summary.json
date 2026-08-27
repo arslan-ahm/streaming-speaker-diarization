@@ -1,0 +1,12 @@
+{
+  "name": "ablation_noncausal",
+  "seed": 2,
+  "n_parameters": 52144,
+  "train_seconds": 513.4064034000039,
+  "wall_seconds": 528.6769796000153,
+  "final_loss": 0.8212866187095642,
+  "final_batch_accuracy": 0.7083333333333334,
+  "vad_threshold": -0.9288298295851749,
+  "vad_frame_error": 0.021625,
+  "checkpoint": "checkpoints\\noncausal_seed2.pt"
+}
