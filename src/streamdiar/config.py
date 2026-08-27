@@ -156,6 +156,18 @@ class DiarizerConfig:
     offline_ahc_threshold: float = 0.42
     #: Maximum K considered by the spectral eigengap search.
     offline_spectral_max_k: int = 10
+    #: Row-wise affinity thresholding percentile for the spectral refinement of
+    #: Wang et al. (2018). 0 disables it. This makes the offline baseline
+    #: *stronger*, which is the point of a fair reference.
+    offline_spectral_percentile: float = 0.90
+    #: k-means restarts inside spectral clustering. Deterministic given the seed.
+    offline_kmeans_restarts: int = 5
+    #: Frames of causal hangover and onset run for the energy VAD.
+    vad_hangover_frames: int = 12
+    vad_onset_frames: int = 3
+    #: Fitted on the dev split by scripts/train.py and stored in the checkpoint;
+    #: this default is only used if a diarizer is built without a fitted model.
+    vad_threshold: float = 0.0
 
 
 @dataclass
