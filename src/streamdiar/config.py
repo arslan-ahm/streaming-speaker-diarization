@@ -49,9 +49,9 @@ class DataConfig:
     turn_median_s: float = 2.4
     turn_sigma: float = 0.75
     #: Probability that a turn overlaps its predecessor rather than following a pause.
-    overlap_prob: float = 0.14
+    overlap_prob: float = 0.45
     #: Overlap extent as a fraction of the shorter of the two turns.
-    overlap_frac_max: float = 0.5
+    overlap_frac_max: float = 0.6
     #: Inter-turn silence, uniform in this range (seconds).
     pause_range_s: tuple[float, float] = (0.05, 0.7)
     #: Speaker-timbre separability. Lower = harder. 1.0 is the calibrated default.

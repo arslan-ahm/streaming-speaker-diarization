@@ -53,7 +53,9 @@ def rng_for(seed: int, *stream: int | str) -> np.random.Generator:
             # Stable across processes, unlike hash() which is salted per run.
             entropy.append(int.from_bytes(part.encode("utf-8")[:8].ljust(8, b"\0"), "little"))
         else:
-            entropy.append(int(part))
+            # SeedSequence rejects negatives; fold into the unsigned range so
+            # sentinel stream ids like -1 are usable.
+            entropy.append(int(part) & 0xFFFFFFFF)
     return np.random.default_rng(np.random.SeedSequence(entropy))
 
 

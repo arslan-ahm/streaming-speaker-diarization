@@ -19,7 +19,7 @@ from __future__ import annotations
 import time
 import tracemalloc
 from collections.abc import Callable
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from typing import Any
 
 import numpy as np
@@ -61,9 +61,7 @@ def summarize_times(samples_s: list[float] | np.ndarray) -> Timing:
     )
 
 
-def measure_latency(
-    fn: Callable[[], Any], warmup: int = 8, repeats: int = 25
-) -> Timing:
+def measure_latency(fn: Callable[[], Any], warmup: int = 8, repeats: int = 25) -> Timing:
     """Time ``fn`` after an adequate warm-up.
 
     ``warmup=8`` is not decoration. Torch selects and caches a convolution
@@ -73,7 +71,7 @@ def measure_latency(
     """
     for _ in range(max(0, warmup)):
         fn()
-    samples = []
+    samples: list[float] = []
     for _ in range(max(1, repeats)):
         t0 = time.perf_counter()
         fn()
