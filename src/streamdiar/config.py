@@ -54,12 +54,20 @@ class DataConfig:
     overlap_frac_max: float = 0.6
     #: Inter-turn silence, uniform in this range (seconds).
     pause_range_s: tuple[float, float] = (0.05, 0.7)
-    #: Speaker-timbre separability. Lower = harder. 1.0 is the calibrated default.
-    speaker_scale: float = 1.0
+    #: Speaker-timbre separability, i.e. the scale of the 8-dimensional identity
+    #: envelope. Calibrated so the task is genuinely learnable but not trivial:
+    #: at these three values an *untrained* embedder scores 0.281 on the 12-way
+    #: batch task (chance 0.083) and a trained one 0.708 after 300 steps. At the
+    #: original speaker_scale=1.0 / channel_sd=0.35 an untrained network already
+    #: scored 0.868, which would have made the whole experiment a measurement of
+    #: random projections rather than of learned embeddings.
+    speaker_scale: float = 0.5
     #: Additive observation noise sd in feature units.
-    noise_sd: float = 0.55
-    #: Slow channel drift sd — a per-recording nuisance the embedder must ignore.
-    channel_sd: float = 0.35
+    noise_sd: float = 0.9
+    #: Per-segment channel offset sd. Isotropic in R^F while identity lives in an
+    #: 8-dimensional subspace, so the embedder must *learn* to project identity
+    #: out of the channel rather than reading it off the raw features.
+    channel_sd: float = 1.5
     #: Number of shared phonetic templates. Content varies within a speaker.
     n_phones: int = 24
     #: Disjoint speaker-identity pools, so test speakers are never trained on.
