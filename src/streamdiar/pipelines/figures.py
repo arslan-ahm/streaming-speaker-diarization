@@ -87,6 +87,9 @@ def der_vs_latency(
         ax.axhline(float(row["der"]), ls="--", lw=1.6, color=COLORS.get(m, "k"),
                    label=f"{m} (offline, infinite latency)")
     ax.set_xscale("symlog", linthresh=125)
+    # symlog draws a mirrored negative decade by default; clip it, since a
+    # negative latency budget is not a thing.
+    ax.set_xlim(-10, float(x.max()) * 1.6 if x.size else 1.0)
     ax.set_xlabel("latency budget (ms, symlog)")
     ax.set_ylabel("DER (collar 0, overlap scored)")
     ax.set_title("DER versus latency budget")
@@ -94,8 +97,15 @@ def der_vs_latency(
     ax.legend(fontsize=7.5, loc="best")
 
     ax = axes[1]
-    ax.plot(np.maximum(online["latency_median_ms"], 1.0), y, "o-",
-            color=COLORS["online"], lw=2, ms=6, label="online")
+    # A log axis cannot show 0, so the B=0 point is drawn at 1 ms and labelled as
+    # such rather than silently relocated.
+    measured = np.maximum(online["latency_median_ms"].to_numpy(dtype=float), 1.0)
+    ax.plot(measured, y, "o-", color=COLORS["online"], lw=2, ms=6, label="online")
+    if measured.size and float(online["latency_median_ms"].min()) <= 0.0:
+        ax.annotate("B = 0 (drawn at 1 ms;\na log axis cannot show 0)",
+                    xy=(1.0, y[int(np.argmin(measured))]),
+                    xytext=(1.6, y.max() - 0.004), fontsize=7,
+                    arrowprops={"arrowstyle": "->", "lw": 0.8})
     for _, row in offline.iterrows():
         m = str(row["method"])
         ax.plot(float(row["latency_median_ms"]), float(row["der"]), "D", ms=9,
@@ -105,7 +115,7 @@ def der_vs_latency(
     ax.set_ylabel("DER")
     ax.set_title("DER versus measured emission delay")
     ax.grid(alpha=0.3, which="both")
-    ax.legend(fontsize=8)
+    ax.legend(fontsize=8, loc="lower left")
     return _save(fig, out)
 
 
