@@ -155,7 +155,7 @@ statistic. Take a recording, replace every frame after `t0` with noise, and re-r
 | variant | windows checked | max abs difference in embeddings |
 |---|---|---|
 | `causal: true` (shipped) | 48 | **0.0** |
-| `causal: false` (ablation) | 48 | 5.7e-3 |
+| `causal: false` (ablation) | 48 | 6.1e-3 |
 
 Reproduce with `pytest tests/test_causality.py -v`, or interactively in
 `notebooks/01_data_and_the_core_idea.ipynb`. The same property is asserted at the
