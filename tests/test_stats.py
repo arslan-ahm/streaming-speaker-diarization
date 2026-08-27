@@ -39,7 +39,10 @@ def enumerate_exact_p(d: np.ndarray) -> float:
     ranks = _rankdata_average(np.abs(d))
     w = ranks[d > 0].sum()
     totals = np.array(
-        [sum(ranks[i] for i in range(n) if signs[i]) for signs in itertools.product([0, 1], repeat=n)]
+        [
+            sum(ranks[i] for i in range(n) if signs[i])
+            for signs in itertools.product([0, 1], repeat=n)
+        ]
     )
     return float(min(1.0, 2.0 * min((totals <= w).mean(), (totals >= w).mean())))
 

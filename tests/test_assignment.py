@@ -28,7 +28,7 @@ def brute_force_optimum(cost: np.ndarray, maximize: bool = False) -> float:
     best = None
     for rows in itertools.combinations(range(n), k):
         for cols in itertools.permutations(range(m), k):
-            total = sum(cost[r, c] for r, c in zip(rows, cols))
+            total = sum(cost[r, c] for r, c in zip(rows, cols, strict=True))
             if best is None or (total > best if maximize else total < best):
                 best = total
     return float(best)

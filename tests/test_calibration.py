@@ -258,7 +258,7 @@ class TestTemperature:
 
     def test_output_is_strictly_inside_the_unit_interval(self):
         out = apply_temperature(np.array([-1e6, 1e6]), 1.0)
-        assert 0.0 < out[0] and out[1] < 1.0
+        assert out[0] > 0.0 and out[1] < 1.0
 
     def test_zero_temperature_does_not_divide_by_zero(self):
         assert np.all(np.isfinite(apply_temperature(np.array([1.0, -1.0]), 0.0)))

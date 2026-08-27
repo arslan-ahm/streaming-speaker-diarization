@@ -42,7 +42,7 @@ class TestTurn:
     def test_is_hashable_and_frozen(self):
         t = Turn(0, 5, 1)
         assert hash(t) == hash(Turn(0, 5, 1))
-        with pytest.raises(Exception):
+        with pytest.raises((AttributeError, TypeError)):
             t.start = 3  # type: ignore[misc]
 
 
@@ -65,7 +65,7 @@ class TestSampleTurns:
         for seed in range(8):
             turns = sample_turns(tiny_data_cfg, 3, rng_for(seed, "t"))
             speakers = [t.speaker for t in turns]
-            assert all(a != b for a, b in zip(speakers, speakers[1:]))
+            assert all(a != b for a, b in zip(speakers, speakers[1:], strict=False))
 
     def test_turns_are_in_time_order(self, tiny_data_cfg):
         turns = sample_turns(tiny_data_cfg, 3, rng_for(2, "t"))
@@ -79,7 +79,7 @@ class TestSampleTurns:
         cfg = DataConfig(**{**tiny_data_cfg.__dict__, "overlap_prob": 0.0})
         for seed in range(6):
             turns = sample_turns(cfg, 3, rng_for(seed, "t"))
-            for a, b in zip(turns, turns[1:]):
+            for a, b in zip(turns, turns[1:], strict=False):
                 assert b.start >= a.end
 
     def test_high_overlap_probability_produces_overlap(self, tiny_data_cfg):
@@ -88,7 +88,8 @@ class TestSampleTurns:
         found = False
         for seed in range(6):
             turns = sample_turns(cfg, 3, rng_for(seed, "t"))
-            if any(b.start < a.end for a, b in zip(turns, turns[1:])):
+            if any(b.start < a.end
+                   for a, b in zip(turns, turns[1:], strict=False)):
                 found = True
         assert found
 
@@ -156,7 +157,7 @@ class TestRecording:
 
         parsed = sorted(parse_rttm(one_recording.to_rttm())[one_recording.name])
         turns = sorted(one_recording.turns, key=lambda t: t.start)
-        for (start, end, _), t in zip(parsed, turns):
+        for (start, end, _), t in zip(parsed, turns, strict=True):
             assert start == pytest.approx(t.start / one_recording.frame_rate, abs=1e-3)
             assert end == pytest.approx(t.end / one_recording.frame_rate, abs=1e-3)
 
@@ -276,7 +277,8 @@ class TestSplits:
     def test_split_is_deterministic(self, tiny_data_cfg):
         a = generate_split(tiny_data_cfg, 0, "test")
         b = generate_split(tiny_data_cfg, 0, "test")
-        assert all(np.array_equal(x.features, y.features) for x, y in zip(a, b))
+        assert all(np.array_equal(x.features, y.features)
+                   for x, y in zip(a, b, strict=True))
 
 
 class TestTrainingSegments:

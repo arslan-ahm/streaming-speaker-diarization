@@ -127,14 +127,16 @@ class TestTraining:
     def test_same_seed_gives_identical_weights(self, tiny_cfg):
         a = train_embedder(tiny_cfg, seed=3)
         b = train_embedder(tiny_cfg, seed=3)
-        for pa, pb in zip(a.embedder.parameters(), b.embedder.parameters()):
+        for pa, pb in zip(a.embedder.parameters(), b.embedder.parameters(),
+                          strict=True):
             assert torch.equal(pa, pb)
 
     def test_different_seeds_give_different_weights(self, tiny_cfg):
         a = train_embedder(tiny_cfg, seed=3)
         b = train_embedder(tiny_cfg, seed=4)
         diffs = [not torch.equal(pa, pb)
-                 for pa, pb in zip(a.embedder.parameters(), b.embedder.parameters())]
+                 for pa, pb in zip(a.embedder.parameters(),
+                                   b.embedder.parameters(), strict=True)]
         assert any(diffs)
 
     def test_history_is_written_to_jsonl(self, tiny_cfg, tmp_path):
@@ -172,7 +174,8 @@ class TestCheckpoint:
     def test_round_trip_preserves_weights(self, untrained_model, tiny_cfg, tmp_path):
         path = save_model(untrained_model, tmp_path / "m.pt")
         again = load_model(path, tiny_cfg)
-        for a, b in zip(untrained_model.embedder.parameters(), again.embedder.parameters()):
+        for a, b in zip(untrained_model.embedder.parameters(),
+                        again.embedder.parameters(), strict=True):
             assert torch.equal(a, b)
 
     def test_round_trip_preserves_the_vad_threshold(self, untrained_model, tiny_cfg, tmp_path):

@@ -68,13 +68,15 @@ def nb01() -> nbformat.NotebookNode:
         ),
         new_code_cell(
             "from streamdiar.config import load_config\n"
-            "from streamdiar.data.generator import generate_recording, generate_split, dataset_stats\n"
+            "from streamdiar.data.generator import (\n"
+            "    dataset_stats, generate_recording, generate_split,\n"
+            ")\n"
             "cfg = load_config('../configs/base.yaml')\n"
             "rec = generate_recording(cfg.data, 0, 1000, 'test')\n"
-            "print(rec.name, rec.features.shape, f'{rec.n_speakers} speakers,'
-            " f' {len(rec.turns)} turns')\n"
-            "print(f'overlap {rec.overlap_fraction():.1%} of speech, "
-            "speech {rec.speech_fraction():.1%} of frames')"
+            "print(rec.name, rec.features.shape,\n"
+            "      f'{rec.n_speakers} speakers, {len(rec.turns)} turns')\n"
+            "print(f'overlap {rec.overlap_fraction():.1%} of speech frames, '\n"
+            "      f'speech {rec.speech_fraction():.1%} of all frames')"
         ),
         new_code_cell(
             "ref = rec.reference_matrix()\n"
@@ -140,10 +142,14 @@ def nb01() -> nbformat.NotebookNode:
             "os.chdir('notebooks')\n"
             "bins = np.linspace(-1, 1, 80)\n"
             "plt.figure(figsize=(9, 4))\n"
-            "plt.hist(diff, bins=bins, alpha=0.6, density=True, label='different speakers', color='#e45756')\n"
-            "plt.hist(same, bins=bins, alpha=0.6, density=True, label='same speaker', color='#4c78a8')\n"
-            "plt.axvline(np.median(same), color='#4c78a8', ls='--', label=f'same median {np.median(same):.3f}')\n"
-            "plt.axvline(np.median(diff), color='#e45756', ls='--', label=f'diff median {np.median(diff):.3f}')\n"
+            "plt.hist(diff, bins=bins, alpha=0.6, density=True,\n"
+            "         label='different speakers', color='#e45756')\n"
+            "plt.hist(same, bins=bins, alpha=0.6, density=True,\n"
+            "         label='same speaker', color='#4c78a8')\n"
+            "plt.axvline(np.median(same), color='#4c78a8', ls='--',\n"
+            "         label=f'same median {np.median(same):.3f}')\n"
+            "plt.axvline(np.median(diff), color='#e45756', ls='--',\n"
+            "         label=f'diff median {np.median(diff):.3f}')\n"
             "plt.axvline(0.83, color='k', ls=':', lw=2, label='tuned spawn_threshold 0.83')\n"
             "plt.xlabel('cosine similarity between window embeddings'); plt.ylabel('density')\n"
             "plt.legend(fontsize=8); plt.grid(alpha=0.3); plt.tight_layout(); plt.show()"
@@ -200,7 +206,8 @@ def nb02() -> nbformat.NotebookNode:
         ),
         new_code_cell(
             "offline = curve[curve.method.str.startswith('offline')]\n"
-            "print(offline[['method', 'der', 'confusion', 'latency_median_ms']].to_string(index=False))"
+            "cols = ['method', 'der', 'confusion', 'latency_median_ms']\n"
+            "print(offline[cols].to_string(index=False))"
         ),
         new_code_cell(
             "fig, axes = plt.subplots(1, 2, figsize=(13, 4.6))\n"
@@ -217,12 +224,15 @@ def nb02() -> nbformat.NotebookNode:
             "axes[0].set_xlabel('latency budget (ms)'); axes[0].set_ylabel('DER')\n"
             "axes[0].set_title('DER vs latency budget'); axes[0].grid(alpha=0.3)\n"
             "axes[0].legend(fontsize=7.5)\n"
-            "axes[1].plot(np.maximum(online.latency_median_ms, 1), y, 'o-', lw=2, color='#1f77b4')\n"
+            "axes[1].plot(np.maximum(online.latency_median_ms, 1),\n"
+            "         y, 'o-', lw=2, color='#1f77b4')\n"
             "for _, r in offline.iterrows():\n"
             "    axes[1].plot(r.latency_median_ms, r.der, 'D', ms=10,\n"
-            "                 color='#2ca02c' if 'ahc' in r.method else '#9467bd', label=r.method)\n"
+            "                 color='#2ca02c' if 'ahc' in r.method else '#9467bd',\n"
+            "                 label=r.method)\n"
             "axes[1].set_xscale('log'); axes[1].set_xlabel('measured median emission delay (ms)')\n"
-            "axes[1].set_ylabel('DER'); axes[1].set_title('...vs what it actually costs in delay')\n"
+            "axes[1].set_ylabel('DER')\n"
+            "axes[1].set_title('...vs what it actually costs in delay')\n"
             "axes[1].grid(alpha=0.3, which='both'); axes[1].legend(fontsize=8)\n"
             "plt.tight_layout(); plt.show()"
         ),

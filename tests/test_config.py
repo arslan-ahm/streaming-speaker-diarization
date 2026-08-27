@@ -329,7 +329,8 @@ def _differing_fields(a, b) -> set[str]:
     def walk(x, y, prefix: str) -> None:
         if isinstance(x, dict) and isinstance(y, dict):
             for k in set(x) | set(y):
-                walk(x.get(k), y.get(k), f"{prefix}{k}." if False else (f"{prefix}.{k}" if prefix else k))
+                name = f"{prefix}.{k}" if prefix else str(k)
+                walk(x.get(k), y.get(k), name)
         elif x != y:
             out.add(prefix)
 
