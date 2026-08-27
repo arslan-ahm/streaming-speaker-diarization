@@ -236,3 +236,144 @@ class TestEigengap:
     def test_empty_affinity(self):
         k, _ = estimate_n_speakers_eigengap(np.zeros((0, 0)), 5)
         assert k == 1
+
+
+class TestSpectral:
+    def test_recovers_three_clusters_at_purity_one(self, three_clusters):
+        x, truth = three_clusters
+        labels, k = spectral_cluster(x, 10, 0.90, seed=0)
+        assert k == 3
+        assert purity(labels, truth) == 1.0
+
+    def test_is_deterministic_given_the_seed(self, three_clusters):
+        x, _ = three_clusters
+        a, _ = spectral_cluster(x, 10, 0.90, seed=0)
+        b, _ = spectral_cluster(x, 10, 0.90, seed=0)
+        assert np.array_equal(a, b)
+
+    def test_oracle_speaker_count_overrides_the_eigengap(self, three_clusters):
+        x, _ = three_clusters
+        _, k = spectral_cluster(x, 10, 0.90, seed=0, n_speakers=5)
+        assert k == 5
+
+    def test_labels_are_dense(self, three_clusters):
+        x, _ = three_clusters
+        labels, k = spectral_cluster(x, 10, 0.90, seed=0)
+        assert set(labels.tolist()) == set(range(k))
+
+    def test_single_point(self):
+        labels, k = spectral_cluster(np.ones((1, 4)), 5, 0.9)
+        assert labels.tolist() == [0] and k == 1
+
+    def test_empty_input(self):
+        labels, k = spectral_cluster(np.zeros((0, 4)), 5, 0.9)
+        assert labels.shape == (0,) and k == 0
+
+    def test_max_k_bounds_the_result(self, three_clusters):
+        x, _ = three_clusters
+        _, k = spectral_cluster(x, 2, 0.90, seed=0)
+        assert k <= 2
+
+
+class TestDiarizeOffline:
+    @staticmethod
+    def _stream(n: int = 60, dim: int = 8, seed: int = 0):
+        rng = np.random.default_rng(seed)
+        a = np.zeros(dim)
+        a[0] = 1.0
+        b = np.zeros(dim)
+        b[-1] = 1.0
+        emb = np.stack(
+            [(a if k < n // 2 else b) + 0.05 * rng.normal(size=dim) for k in range(n)]
+        )
+        emb = emb / np.linalg.norm(emb, axis=1, keepdims=True)
+        ends = (np.arange(n) + 1) * 25
+        return emb, np.maximum(0, ends - 50), ends, np.ones(n, dtype=bool)
+
+    def test_emission_is_the_final_frame_for_every_window(self, tiny_cfg):
+        """The defining property of offline: nothing is emitted until the recording
+        ends, so the emission delay grows without bound in recording length."""
+        emb, starts, ends, speech = self._stream()
+        out = diarize_offline(emb, starts, ends, speech, tiny_cfg.diarizer,
+                              int(ends[-1]), 25, method="offline_ahc")
+        assert (out.emission_frames == ends[-1]).all()
+
+    def test_finds_two_speakers_ahc(self, tiny_cfg):
+        emb, starts, ends, speech = self._stream()
+        out = diarize_offline(emb, starts, ends, speech, tiny_cfg.diarizer,
+                              int(ends[-1]), 25, method="offline_ahc")
+        assert out.n_speakers == 2
+
+    def test_finds_two_speakers_spectral(self, tiny_cfg):
+        emb, starts, ends, speech = self._stream()
+        out = diarize_offline(emb, starts, ends, speech, tiny_cfg.diarizer,
+                              int(ends[-1]), 25, method="offline_spectral")
+        assert out.n_speakers == 2
+
+    def test_non_speech_windows_are_excluded_from_clustering(self, tiny_cfg):
+        emb, starts, ends, speech = self._stream()
+        speech = speech.copy()
+        speech[10:20] = False
+        out = diarize_offline(emb, starts, ends, speech, tiny_cfg.diarizer,
+                              int(ends[-1]), 25, method="offline_ahc")
+        assert (out.labels[10:20] == -1).all()
+
+    def test_all_non_speech_gives_no_speakers(self, tiny_cfg):
+        emb, starts, ends, _ = self._stream()
+        out = diarize_offline(emb, starts, ends, np.zeros(len(ends), dtype=bool),
+                              tiny_cfg.diarizer, int(ends[-1]), 25, method="offline_ahc")
+        assert out.n_speakers == 0
+
+    def test_confidence_is_finite_on_speech_windows(self, tiny_cfg):
+        emb, starts, ends, speech = self._stream()
+        out = diarize_offline(emb, starts, ends, speech, tiny_cfg.diarizer,
+                              int(ends[-1]), 25, method="offline_ahc")
+        assert np.isfinite(out.confidence[speech]).all()
+
+    def test_confidence_is_nan_on_non_speech_windows(self, tiny_cfg):
+        emb, starts, ends, speech = self._stream()
+        speech = speech.copy()
+        speech[5:8] = False
+        out = diarize_offline(emb, starts, ends, speech, tiny_cfg.diarizer,
+                              int(ends[-1]), 25, method="offline_ahc")
+        assert np.isnan(out.confidence[5:8]).all()
+
+    def test_unknown_method_raises(self, tiny_cfg):
+        emb, starts, ends, speech = self._stream()
+        with pytest.raises(ValueError, match="unknown offline method"):
+            diarize_offline(emb, starts, ends, speech, tiny_cfg.diarizer,
+                            int(ends[-1]), 25, method="offline_magic")
+
+    def test_oracle_count_is_honoured_by_ahc(self, tiny_cfg):
+        emb, starts, ends, speech = self._stream()
+        dcfg = replace(tiny_cfg.diarizer, offline_ahc_threshold=0.001)
+        out = diarize_offline(emb, starts, ends, speech, dcfg, int(ends[-1]), 25,
+                              method="offline_ahc", oracle_n_speakers=3)
+        assert out.n_speakers == 3
+
+    def test_k_estimated_is_reported(self, tiny_cfg):
+        emb, starts, ends, speech = self._stream()
+        out = diarize_offline(emb, starts, ends, speech, tiny_cfg.diarizer,
+                              int(ends[-1]), 25, method="offline_spectral")
+        assert out.extra["k_estimated"] >= 1
+
+    def test_method_name_is_recorded(self, tiny_cfg):
+        emb, starts, ends, speech = self._stream()
+        for method in ["offline_ahc", "offline_spectral"]:
+            out = diarize_offline(emb, starts, ends, speech, tiny_cfg.diarizer,
+                                  int(ends[-1]), 25, method=method)
+            assert out.method == method
+
+    def test_is_deterministic(self, tiny_cfg):
+        emb, starts, ends, speech = self._stream()
+        a = diarize_offline(emb, starts, ends, speech, tiny_cfg.diarizer,
+                            int(ends[-1]), 25, method="offline_spectral", seed=0)
+        b = diarize_offline(emb, starts, ends, speech, tiny_cfg.diarizer,
+                            int(ends[-1]), 25, method="offline_spectral", seed=0)
+        assert np.array_equal(a.labels, b.labels)
+
+    def test_frame_labels_cover_the_recording(self, tiny_cfg):
+        emb, starts, ends, speech = self._stream()
+        out = diarize_offline(emb, starts, ends, speech, tiny_cfg.diarizer,
+                              int(ends[-1]), 25, method="offline_ahc")
+        assert out.frame_labels().shape == (ends[-1],)
