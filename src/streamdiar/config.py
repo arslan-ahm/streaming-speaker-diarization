@@ -153,7 +153,7 @@ class DiarizerConfig:
     #: Hard cap on tracked speakers — this is what makes memory O(1) in length.
     max_speakers: int = 12
     #: Centroid update rate. 0 < alpha <= 1; 1.0 = replace, small = sticky.
-    centroid_momentum: float = 0.35
+    centroid_momentum: float = 0.10
     #: If given, the true speaker count is supplied (oracle-count variant).
     oracle_n_speakers: bool = False
     #: Softmax temperature on cosine similarities for the confidence score.

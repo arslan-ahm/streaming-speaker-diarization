@@ -17,6 +17,8 @@ and that only works if each budget's rows are on disk before the next starts.
 
 from __future__ import annotations
 
+import os
+import time
 from pathlib import Path
 from typing import Any
 
@@ -101,32 +103,64 @@ def rows_from_results(
     return rows
 
 
+def _retry(fn, attempts: int = 6, delay: float = 0.25):
+    """Retry a filesystem operation a few times before giving up.
+
+    Windows raises ``OSError: [Errno 22] Invalid argument`` when a file is opened
+    for writing while another process holds a read handle on it. That is not
+    hypothetical here: the chunked latency sweep appends to one CSV from a
+    sequence of processes while the operator inspects it, and exactly one such
+    collision killed a 33-cell sweep at cell 15 during development. Retrying
+    turns a lost run into a 250 ms pause.
+    """
+    last: Exception | None = None
+    for attempt in range(attempts):
+        try:
+            return fn()
+        except OSError as exc:  # includes PermissionError and Errno 22
+            last = exc
+            time.sleep(delay * (attempt + 1))
+    raise last if last is not None else RuntimeError("retry failed with no exception")
+
+
+def _write_csv_atomic(path: Path, df: pd.DataFrame) -> Path:
+    """Write to a sibling temp file, then ``os.replace`` it into place.
+
+    ``os.replace`` is atomic on both POSIX and Windows, so a reader sees either
+    the complete previous file or the complete new one — never a half-written
+    table. Without this, a kill during the write would leave a truncated CSV that
+    the resumable sweep would then treat as authoritative and never recompute.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(f"{path.name}.tmp{os.getpid()}")
+    _retry(lambda: df.to_csv(tmp, index=False, lineterminator="\n"))
+    _retry(lambda: os.replace(tmp, path))
+    return path
+
+
 def append_rows(path: str | Path, rows: list[dict[str, Any]]) -> Path:
     """Append rows to a CSV, writing the header only when creating the file.
 
     Columns are unioned with whatever is already on disk, so a later chunk that
     reports an extra metric does not silently shift every column. LF endings
-    throughout, per the build standard.
+    throughout, per the build standard, and the write is atomic and retried —
+    see :func:`_write_csv_atomic` and :func:`_retry`.
     """
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
     new = pd.DataFrame(rows)
     if p.exists():
-        old = pd.read_csv(p)
-        combined = pd.concat([old, new], ignore_index=True, sort=False)
+        existing = _retry(lambda: pd.read_csv(p))
+        combined = pd.concat([existing, new], ignore_index=True, sort=False)
     else:
         combined = new
-    combined.to_csv(p, index=False, lineterminator="\n")
-    return p
+    return _write_csv_atomic(p, combined)
 
 
 def write_table(path: str | Path, rows: list[dict[str, Any]] | pd.DataFrame) -> Path:
-    """Overwrite a CSV table with LF endings."""
-    p = Path(path)
-    p.parent.mkdir(parents=True, exist_ok=True)
+    """Overwrite a CSV table with LF endings, atomically."""
     df = rows if isinstance(rows, pd.DataFrame) else pd.DataFrame(rows)
-    df.to_csv(p, index=False, lineterminator="\n")
-    return p
+    return _write_csv_atomic(Path(path), df)
 
 
 #: The metric family that every statistical comparison corrects across with

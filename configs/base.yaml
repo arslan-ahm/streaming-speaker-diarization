@@ -50,7 +50,10 @@ diarizer:
   bounded_window: true
   spawn_enabled: true
   max_speakers: 12
-  centroid_momentum: 0.35
+  # Tuned on dev, seed 0 (scripts/tune_momentum.py): best average dev DER
+  # across the whole budget grid. The original guessed 0.35 was materially worse
+  # at every budget -- see docs/RESULTS.md.
+  centroid_momentum: 0.10
   # --- tuned on dev, seed 0, by scripts/tune_thresholds.py ---
   # Selection rule: minimum dev DER, near-ties (within 1% relative DER) broken on
   # the smallest |speaker-count bias|. Grids in
