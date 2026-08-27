@@ -1,0 +1,46 @@
+name: tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    env:
+      OMP_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Pin Python
+        run: uv python install 3.12
+
+      # The 3.14 torch wheels in some environments ship without the bundled
+      # torchgen package, so the Python version is pinned rather than floating.
+      - name: Sync dependencies (CPU torch)
+        run: uv sync --extra dev
+
+      - name: Ruff
+        run: uv run ruff check src scripts tests
+
+      - name: Tests
+        run: uv run pytest tests -m "not slow" -q
+
+      # The smoke path is the standard's end-to-end check: it must produce a
+      # populated results table, not merely exit zero.
+      - name: End-to-end smoke
+        run: |
+          uv run python scripts/train.py --config configs/smoke.yaml --seed 0 --quiet
+          uv run python scripts/run_experiments.py --stage comparison --config configs/smoke.yaml --seeds 0

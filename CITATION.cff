@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "streamdiar: online bounded-latency speaker diarization with a measured DER/latency tradeoff"
+abstract: >-
+  A from-scratch online speaker diarizer that commits a speaker label for every
+  window within a fixed emission delay, with the offline global-clustering
+  reference implemented in the same codebase as the infinite-latency asymptote.
+  The deliverable is the measured DER-versus-latency curve, with every difference
+  placed against the run-to-run noise scale sqrt(2)*sd from a three-seed study.
+  Causality is a structural guarantee, asserted bit-identically under future
+  perturbation rather than argued.
+authors:
+  - family-names: Ahmad
+    given-names: Arslan
+version: 1.0.0
+license: MIT
+repository-code: "https://github.com/arslan-ahmad/streaming-speaker-diarization"
+keywords:
+  - speaker-diarization
+  - online-diarization
+  - streaming
+  - latency
+  - diarization-error-rate
+  - calibration
+  - selective-prediction
