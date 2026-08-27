@@ -61,7 +61,7 @@ class TestCosineDistance:
 class TestAhc:
     def test_recovers_three_well_separated_clusters(self, three_clusters):
         x, truth = three_clusters
-        labels = agglomerative_average_linkage(cosine_distance_matrix(x), 0.22)
+        labels = agglomerative_average_linkage(cosine_distance_matrix(x), 0.30)
         assert labels.max() + 1 == 3
         assert purity(labels, truth) == 1.0
 
@@ -94,7 +94,7 @@ class TestAhc:
 
     def test_labels_are_dense_and_zero_based(self, three_clusters):
         x, _ = three_clusters
-        labels = agglomerative_average_linkage(cosine_distance_matrix(x), 0.22)
+        labels = agglomerative_average_linkage(cosine_distance_matrix(x), 0.30)
         assert set(labels.tolist()) == set(range(labels.max() + 1))
 
     def test_empty_input(self):
@@ -110,14 +110,14 @@ class TestAhc:
         x, _ = three_clusters
         d = cosine_distance_matrix(x)
         assert np.array_equal(
-            agglomerative_average_linkage(d, 0.22), agglomerative_average_linkage(d, 0.22)
+            agglomerative_average_linkage(d, 0.30), agglomerative_average_linkage(d, 0.30)
         )
 
     def test_does_not_mutate_its_input(self, three_clusters):
         x, _ = three_clusters
         d = cosine_distance_matrix(x)
         before = d.copy()
-        agglomerative_average_linkage(d, 0.22)
+        agglomerative_average_linkage(d, 0.30)
         assert np.array_equal(d, before)
 
 
