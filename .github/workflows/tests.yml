@@ -38,6 +38,14 @@ jobs:
       - name: Tests
         run: uv run pytest tests -m "not slow" -q
 
+      # The slow tests train real (tiny) models end to end, so they are the
+      # ones that catch wiring bugs between modules. They are the reason a
+      # `-m "not slow"` run is not evidence that the suite passes.
+      # Linux only, to keep the matrix cheap.
+      - name: Slow tests (end to end)
+        if: matrix.os == 'ubuntu-latest'
+        run: uv run pytest tests -q -m slow
+
       # The smoke path is the standard's end-to-end check: it must produce a
       # populated results table, not merely exit zero.
       - name: End-to-end smoke
