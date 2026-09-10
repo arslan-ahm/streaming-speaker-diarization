@@ -7,7 +7,9 @@
 # The Latency Budget Nobody Measured
 
 <!-- links:begin -->
-**[Live results and figures](https://streaming-diarization-arslan.surge.sh)** &nbsp;·&nbsp; **[Source](https://github.com/arslan-ahm/streaming-speaker-diarization)** &nbsp;·&nbsp; [All seven projects](https://seven-ai-projects-arslan.surge.sh)
+**[▶ Try the live demo](https://huggingface.co/spaces/ARslan-Ahamd/streaming-speaker-diarization)** &nbsp;·&nbsp; **[Full results](https://streaming-diarization-arslan.surge.sh)** &nbsp;·&nbsp; [All seven projects](https://seven-ai-projects-arslan.surge.sh)
+
+<sub>The demo runs this repository's own code in your browser via Pyodide — no server, nothing uploaded.</sub>
 <!-- links:end -->
 
 > **Online speaker diarization under a bounded emission delay, with the offline
