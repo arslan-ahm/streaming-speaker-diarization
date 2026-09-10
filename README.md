@@ -6,6 +6,10 @@
 
 # The Latency Budget Nobody Measured
 
+<!-- links:begin -->
+**[Live results and figures](https://streaming-diarization-arslan.surge.sh)** &nbsp;·&nbsp; **[Source](https://github.com/arslan-ahm/streaming-speaker-diarization)** &nbsp;·&nbsp; [All seven projects](https://seven-ai-projects-arslan.surge.sh)
+<!-- links:end -->
+
 **Online speaker diarization under a bounded emission delay, with the offline
 global-clustering reference implemented in the same codebase as the
 infinite-latency asymptote.**
